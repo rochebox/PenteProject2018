@@ -39,15 +39,6 @@ public class ComputerMoveGenerator
         // Rule 3 -- Ariah's Rule is put stone next to last move
         //Rule [last] -- Make Random Move (low priority)
     
-        //busy loop to simulate thinking...
-//        for(int w= 0; w < 100000; ++w)
-//        {
-//          System.out.println("computer is thinking...");
-//        }
-         
-          //System.out.println("Hi, in top of make a computer move right before call to find stone groups");
-    
-    
         //**********************ADDED May 12-13 to check for better moves................
         //note this is being tested to its not 100% on line yet
         if(myGame.getWhoIsRed()== "Computer"){
@@ -55,6 +46,14 @@ public class ComputerMoveGenerator
         } else {
           this.findStoneGroups(PenteGame.GOLD);
         }
+        
+        // ***********************
+        
+        // here is where you would use the generated:
+        //offenseMoveList and 
+        // defenseMoveList to make moves
+        
+        
          //***********************
         
         
