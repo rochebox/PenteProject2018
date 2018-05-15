@@ -1,6 +1,7 @@
 package pentePac2018;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 public class Square
@@ -28,6 +29,11 @@ public class Square
       private int nextMoveDPriority = -1;  //all priorities would positive.
       private int moveForOffense = 0;   // either 0 or 1
       private int moveForDefense = 0;  // either 0 or -1
+      
+      private Font  f = new Font("Helvetica", Font.PLAIN, 18);
+        
+
+      
       
       public Square(int x, int y, int len) 
       {
@@ -136,8 +142,7 @@ public class Square
       
       public void drawAvailableMoves(Graphics g)
       {
-    
-                  
+
                   if(moveForOffense == ComputerMoveGenerator.OFFENSE)
                   {
                         g.setColor(Color.GREEN);
@@ -149,11 +154,15 @@ public class Square
                             (int)(sideLength * 0.8 ) - 6
                             );
                         
+                        g.setColor(Color.GREEN);
+                        g.setFont(f);
+                        String s = "" + nextMoveOPriority;
+                        g.drawString(s, xLoc+ (int)(sideLength * 0.3) -4, yLoc +(int)(sideLength * 0.3) + 4);
+                        
                   }
                   
                   if(moveForDefense == ComputerMoveGenerator.DEFENSE)
                   {
-                    
                         g.setColor(Color.BLUE);
                         
                         g.drawOval (
@@ -162,11 +171,14 @@ public class Square
                             (int)(sideLength * 0.8) ,
                             (int)(sideLength * 0.8 ) 
                             );
+                        
+                        
+                        g.setColor(Color.BLUE);
+                        g.setFont(f);
+                        String s = "" + nextMoveDPriority;
+                        g.drawString(s, xLoc+ (int)(sideLength * 0.3) + 5, yLoc +(int)(sideLength * 0.3) + 4);
                   }
-                  
-                 
-                 // String s = "NMP= " + nextMovePriority;
-                 // g.drawString(s, xLoc+ (int)(sideLength * 0.3), (int)(sideLength * 0.3));
+   
                   
                 
       }
@@ -201,14 +213,25 @@ public class Square
       public void setNextMovePriority(int newP, int OorD)
       {
         
+              System.out.println(" setting Next Move priority for " + OorD + " its: " + newP);
               if(OorD == ComputerMoveGenerator.DEFENSE){
-                  nextMoveDPriority = newP;
-                  moveForDefense = OorD;
+                
+                  if( newP >= nextMoveDPriority)
+                  {
+                    
+                    nextMoveDPriority = newP;
+                    moveForDefense = OorD;
+                    System.out.println("NextMoveDPriority is " + nextMoveDPriority);
+                  }
               }
               
               if(OorD == ComputerMoveGenerator.OFFENSE){
-                nextMoveOPriority = newP;
-                moveForOffense = OorD;
+                if (newP >=  nextMoveOPriority)
+                {
+                    nextMoveOPriority = newP;
+                    moveForOffense = OorD;
+                    System.out.println("NextMoveOPriority is " + nextMoveOPriority);
+                }
             }
       }
       

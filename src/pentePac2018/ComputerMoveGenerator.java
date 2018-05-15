@@ -58,11 +58,11 @@ public class ComputerMoveGenerator
          //***********************
         
         
-        boolean didMove = makeAriahMove(lastRow, lastCol);
-        if(didMove == false) 
-        {
+       // boolean didMove = makeAriahMove(lastRow, lastCol);
+      //  if(didMove == false) 
+      //  {
             doRandomMove();
-        }
+       // }
         
   }
   
@@ -174,7 +174,8 @@ public class ComputerMoveGenerator
                
            findHorizontalGroups( whichColor, this.OFFENSE);   
            findHorizontalGroups( whichColor * -1 , this.DEFENSE);   
-           
+          
+          
            findVerticalGroups( whichColor, this.OFFENSE);   
            findVerticalGroups( whichColor * -1 , this.DEFENSE);   
            
@@ -183,7 +184,7 @@ public class ComputerMoveGenerator
            
            findDiagonalGroups2(whichColor, this.OFFENSE);
            findDiagonalGroups2(whichColor * -1, this.DEFENSE);
-            
+           
             System.out.println("At the end of findStoneGroups --here is what is on the Offense List");
             System.out.println(offenseMoveList);
         }
@@ -207,6 +208,58 @@ public class ComputerMoveGenerator
           
         }
         
+        
+        
+ public int  adjustPriorityRankings(
+            int priorityRanking, 
+            int stoneGroupLength, 
+            int end1Status, 
+            int end1row, 
+            int end1col,
+            int end2Status,
+            int end2row, 
+            int end2col, 
+            int OorD
+            ) {
+   
+   
+           /* Ranking of moves
+            *  Offensive -- four in row and you can get a 5 (figure a way to join) --->100
+            *  Defensive -- four captures and you can get 5  --->95
+            *  Defensive -- opponent has 4 in row (stop the 5... and you can stop it) -->
+            *  Defensive -- opponent has unbounded 3
+            *  Defensive -- opponent has unbounded 2
+            *  Offensive -- you have three unbounded, going for 4
+            *  Offensive -- you have two unbounded going for 3 unbounded
+            *  Defensive - get a capture -- two with one empty
+            *  Offensive -- Ariah move building a two
+            *  
+            */
+   
+           if(OorD == ComputerMoveGenerator.DEFENSE){
+                 //adjusting DEFENSE Moves
+                     if(stoneGroupLength== 3){
+                             if(end1Status == PenteGame.EMPTY && end2Status == PenteGame.EMPTY){
+                               priorityRanking *=3;
+                             }
+                     }
+           } else {
+             //adjusting OFFENSE Moves
+             
+                   if(stoneGroupLength >= 4){
+                           if(end1Status == PenteGame.EMPTY || end2Status == PenteGame.EMPTY)
+                           {
+                             priorityRanking = 99;
+                           }
+                   }
+             
+           }
+           
+   
+           return priorityRanking;
+   
+     }
+        
         //**************** THIS IS THE FIRST PART OF FINDING MOVES ***** FINDING HORIZONTAL MOVES.
         
         public void findHorizontalGroups( int whichColor, int OorD )
@@ -216,12 +269,15 @@ public class ComputerMoveGenerator
                     //look for stone combinations
                     boolean done = false;
                     int col = 0;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0;
                     
                     while(!done && col < 19)
                     {
+                            stoneGroupLength = 0;
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  col++;
                                  while( col < 19 && board[row][col].getState()==whichColor )
                                  {
@@ -230,7 +286,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(col < 19)
@@ -238,7 +294,7 @@ public class ComputerMoveGenerator
                                       end2 = board[row][col].getState();
                                    } else {
                                        end2 = PenteGame.EDGE;
-                                    }
+                                  }
                                
                                    //now we do end1
                                    if( (col - stoneGroupLength - 1 ) >= 0 )
@@ -249,23 +305,35 @@ public class ComputerMoveGenerator
                                  }
                                
     
-                                       //Now Evaluate the move
+                                       //Now add possible Moves
+                                   
+                                      priorityRanking = adjustPriorityRankings(
+                                          priorityRanking, 
+                                          stoneGroupLength, 
+                                          end1, 
+                                          row, 
+                                          col-stoneGroupLength-1,
+                                          end2,
+                                          row, 
+                                          col, 
+                                          OorD
+                                          );
                                
                                        if(end1 == PenteGame.GOLD)
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col - stoneGroupLength - 1, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                            // priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -273,7 +341,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
@@ -299,12 +367,15 @@ public class ComputerMoveGenerator
                     //look for stone combinations
                     boolean done = false;
                     int row = 0;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0;
+                    
                     
                     while(!done && row < 19)
                     {
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  row++;
                                  while( row < 19 && board[row][col].getState()==whichColor )
                                  {
@@ -313,7 +384,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(row < 19)
@@ -338,17 +409,17 @@ public class ComputerMoveGenerator
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row  - stoneGroupLength - 1, col, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                             //priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -356,7 +427,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
@@ -381,12 +452,14 @@ public class ComputerMoveGenerator
                     boolean done = false;
                     int col = i;
                     int row = 0;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0;
                     
                     while(!done && (col < 19 && row < 19 ))
                     {
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  col++;
                                  row++;
                                  while( (col < 19 && row < 19  ) && board[row][col].getState()==whichColor )
@@ -397,7 +470,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(col < 19  && row < 19 )
@@ -422,17 +495,17 @@ public class ComputerMoveGenerator
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row - stoneGroupLength - 1, col - stoneGroupLength - 1, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                             //priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -440,7 +513,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
@@ -454,7 +527,7 @@ public class ComputerMoveGenerator
               
           }
           
-          
+
           
           for (int i = 18;  i >=0; i--)
           {
@@ -462,12 +535,14 @@ public class ComputerMoveGenerator
                     boolean done = false;
                     int col = 0;
                     int row = i;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0; 
                     
                     while(!done && (col < 19 && row < 19 ))
                     {
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  col++;
                                  row++;
                                  while( (col < 19 && row < 19  ) && board[row][col].getState()==whichColor )
@@ -478,7 +553,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(col < 19  && row < 19 )
@@ -503,17 +578,17 @@ public class ComputerMoveGenerator
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row - stoneGroupLength - 1, col - stoneGroupLength - 1, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                             //priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -521,7 +596,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
@@ -550,12 +625,14 @@ public class ComputerMoveGenerator
                     boolean done = false;
                     int col = i;
                     int row = 0;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0; 
                     
                     while(!done && (col >= 0 && row < 19 ))
                     {
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  col--;
                                  row++;
                                  while( (col >=0 && row < 19  ) && board[row][col].getState()==whichColor )
@@ -566,7 +643,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(col >= 0  && row < 19 )
@@ -591,17 +668,17 @@ public class ComputerMoveGenerator
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row - stoneGroupLength - 1, col + stoneGroupLength + 1, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                             //priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -609,7 +686,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
@@ -631,12 +708,14 @@ public class ComputerMoveGenerator
                     boolean done = false;
                     int col = 18;
                     int row = i;
+                    int stoneGroupLength = 0;
+                    int priorityRanking = 0; 
                     
                     while(!done && (col >= 0 && row < 19 ))
                     {
                             if( board[row][col].getState()==whichColor )
                             {
-                                 int stoneGroupLength = 1;
+                                 stoneGroupLength = 1;
                                  col--;
                                  row++;
                                  while( (col >= 0 && row < 19  ) && board[row][col].getState()==whichColor )
@@ -647,7 +726,7 @@ public class ComputerMoveGenerator
                                  }
                                  
                                  int end1 = 0, end2 = 0;
-                                 int priorityRanking = stoneGroupLength;
+                                 priorityRanking = stoneGroupLength;
                                  
                                   //we will do edge2 first:
                                   if(col >= 0  && row < 19 )
@@ -672,17 +751,17 @@ public class ComputerMoveGenerator
                                        {
                                                        if( end2 == PenteGame.EMPTY)
                                                        {
-                                                            priorityRanking += stoneGroupLength +1;
+                                                            //priorityRanking += stoneGroupLength +1;
                                                             placeStoneOnList(row, col , priorityRanking, OorD);
                                                        }
                                          
                                        } else if ( end1 == PenteGame.EMPTY){
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row - stoneGroupLength - 1, col + stoneGroupLength + 1, priorityRanking, OorD);
                                              
                                                            if(end2 == PenteGame.EMPTY)
                                                            {
-                                                             priorityRanking += stoneGroupLength +1;
+                                                             //priorityRanking += stoneGroupLength +1;
                                                              placeStoneOnList(row, col, priorityRanking, OorD);  
                                                            }
                                              
@@ -690,7 +769,7 @@ public class ComputerMoveGenerator
                                          
                                                        if(end2 == PenteGame.EMPTY)
                                                        {
-                                                         priorityRanking += stoneGroupLength +1;
+                                                         //priorityRanking += stoneGroupLength +1;
                                                          placeStoneOnList(row, col, priorityRanking, OorD);     
                                                        }
                                        }
