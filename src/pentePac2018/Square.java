@@ -3,14 +3,16 @@ package pentePac2018;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.Comparator;
 
-public class Square
+public class Square 
 {
   
   
       private int xLoc, yLoc;
       private int sideLength;
       private int squareState;
+      private int myRow, myCol;
      
       private Color bColor = new Color(253, 247, 201);
       
@@ -35,12 +37,14 @@ public class Square
 
       
       
-      public Square(int x, int y, int len) 
+      public Square(int x, int y, int len, int r, int c) 
       {
           xLoc = x;
           yLoc = y;
           sideLength = len;
           squareState = PenteGame.EMPTY;
+          myRow = r;
+          myCol = c;
           
           
       }
@@ -54,7 +58,7 @@ public class Square
             g.fillRect(xLoc, yLoc, sideLength, sideLength);
             
             //for drawing Available moves
-            drawAvailableMoves(g);
+           // drawAvailableMoves(g);
             
             //if there is a stone draw a shadow
             if(squareState!= PenteGame.EMPTY)
@@ -254,6 +258,40 @@ public class Square
             moveForDefense = 0;  // either 0 or -1
       }
       
+      public int getMyRow(){
+        return myRow;
+      }
+      
+      public int getMyCol() {
+        return myCol;
+      }
+
+
+      
+      public static Comparator<Square> OffenseCompare = new Comparator<Square>() {
+        
+        
+                          public int compare(Square s1, Square s2){
+                                 int oScore1 = s1.getNextMoveOPriority();
+                                 int oScore2 = s2.getNextMoveOPriority();
+                            
+                                 return oScore2-oScore1;
+                          }
+        
+      };
+
+      
+      public static Comparator<Square> DefenseCompare = new Comparator<Square>() {
+        
+        
+        public int compare(Square s1, Square s2){
+               int dScore1 = s1.getNextMoveDPriority();
+               int dScore2 = s2.getNextMoveDPriority();
+          
+               return dScore2-dScore1;
+        }
+
+};
       
 
 }

@@ -177,7 +177,7 @@ public class PenteGame extends JPanel implements MouseListener
                      yStart = frameBorder;
                       for(int r = 0; r < SQUARES_ON_SIDE; r++)
                       {
-                         board[r][c] = new Square(xStart, yStart, squareLength);
+                         board[r][c] = new Square(xStart, yStart, squareLength, r, c);
                          yStart += squareLength;
                          // this is to test square states
                         
@@ -581,7 +581,15 @@ public class PenteGame extends JPanel implements MouseListener
       public String getWhoIsGold(){
         return whoIsGOLD;
       }
+      
+      public int getRedCaptures(){
+        return redCaptures;
+      }
 
+      public int getGoldCaptures(){
+        return goldCaptures;
+      }
+      
       public void mouseReleased(MouseEvent e)
       {
         // TODO Auto-generated method stub

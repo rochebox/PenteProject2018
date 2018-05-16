@@ -2,6 +2,7 @@ package pentePac2018;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ComputerMoveGenerator
 {
@@ -53,15 +54,79 @@ public class ComputerMoveGenerator
         //offenseMoveList and 
         // defenseMoveList to make moves
         
+        //Sort the Defense List
+        /*Sorting based on Student Name*/
+        System.out.println("Defense Sorting:");
+        Collections.sort(defenseMoveList, Square.DefenseCompare);
+
+        for(Square s  :  defenseMoveList){
+          System.out.println(s.getNextMoveDPriority());
+      }
         
+     
+        
+  
+        
+        //offenseMoveList.sort(c);
+        System.out.println("Offense Sorting:");
+        Collections.sort(offenseMoveList, Square.OffenseCompare);
+
+        for(Square s  :  offenseMoveList){
+          System.out.println(s.getNextMoveOPriority());
+      }
          //***********************
+        //NOW TRY TO MAKE AN ACTUAL MOVE
         
+        int bestOMoveScore, bestDMoveScore;
+        if(offenseMoveList.size() > 0){
+          bestOMoveScore = offenseMoveList.get(0).getNextMoveOPriority();
+        } else {
+          bestOMoveScore = -1;
+        }
         
-       // boolean didMove = makeAriahMove(lastRow, lastCol);
-      //  if(didMove == false) 
-      //  {
-            doRandomMove();
-       // }
+        if(defenseMoveList.size() > 0){
+          bestDMoveScore = defenseMoveList.get(0).getNextMoveDPriority();
+        } else {
+          bestDMoveScore = -1;
+        }
+    
+       if(bestOMoveScore < 0 && bestDMoveScore < 0)
+       {
+         doRandomMove();
+       } else {
+        
+                  if(bestOMoveScore > bestDMoveScore)
+                  {
+                        if(     myGame.getWhoIsRed().equals("Computer")    )
+                        {
+                              offenseMoveList.get(0).setState(PenteGame.RED);
+                        } else {
+                              offenseMoveList.get(0).setState(PenteGame.GOLD);               
+                        }
+                        myGame.checkForCaptures(
+                            offenseMoveList.get(0).getMyRow(), 
+                            offenseMoveList.get(0).getMyCol()
+                            );
+                  } else {
+                    
+                            if(     myGame.getWhoIsRed().equals("Computer")    )
+                            {
+                                  defenseMoveList.get(0).setState(PenteGame.RED);
+                            } else {
+                                  defenseMoveList.get(0).setState(PenteGame.GOLD);               
+                            }   
+                            myGame.checkForCaptures(
+                                defenseMoveList.get(0).getMyRow(), 
+                                defenseMoveList.get(0).getMyCol()
+                                );
+                  }
+                  
+       }
+        //
+
+       //clean up!
+       myGame.changeTurn();
+       myGame.repaint();
         
   }
   
@@ -138,9 +203,7 @@ public class ComputerMoveGenerator
                 board[randRow][randCol].setState(PenteGame.GOLD);
               }
               
-              myGame.checkForCaptures(randRow, randCol);
-              myGame.changeTurn();
-              myGame.repaint();
+ 
           
         }
     
@@ -201,10 +264,7 @@ public class ComputerMoveGenerator
                             board[r][c].resetNextMovePriorities();
                       
                     }
-              
             }
-          
-          
         }
         
         
@@ -225,32 +285,115 @@ public class ComputerMoveGenerator
            /* Ranking of moves
             *  Offensive -- four in row and you can get a 5 (figure a way to join) --->100
             *  Defensive -- four captures and you can get 5  --->95
-            *  Defensive -- opponent has 4 in row (stop the 5... and you can stop it) -->
-            *  Defensive -- opponent has unbounded 3
-            *  Defensive -- opponent has unbounded 2
-            *  Offensive -- you have three unbounded, going for 4
-            *  Offensive -- you have two unbounded going for 3 unbounded
-            *  Defensive - get a capture -- two with one empty
+            *  Defensive -- opponent has 4 in row (stop the 5... and you can stop it) --> 90
+             *  Offensive -- you have three unbounded, going for 4 --> 85
+            *  Defensive -- opponent has unbounded 3 --> 80
+            *  Offensive -- you have two unbounded going for 3 unbounded --> 75
+            *  Defensive - get a capture -- two with one empty --> 70
+            *  Defensive -- opponent has unbounded 2  --> 65
+
+
             *  Offensive -- Ariah move building a two
             *  
             */
    
            if(OorD == ComputerMoveGenerator.DEFENSE){
                  //adjusting DEFENSE Moves
-                     if(stoneGroupLength== 3){
-                             if(end1Status == PenteGame.EMPTY && end2Status == PenteGame.EMPTY){
-                               priorityRanking *=3;
+             
+                     int numOfCaptures;
+                     int computerColor;
+                     if( myGame.getWhoIsRed().equals("Computer"))
+                     {
+                           numOfCaptures =  myGame.getRedCaptures();
+                           computerColor = PenteGame.RED;
+                     } else {
+                           numOfCaptures =  myGame.getGoldCaptures();  
+                           computerColor = PenteGame.GOLD;
+                     }
+                     
+                     //Case --  Defensive -- four captures and you can get 5  --->95
+                     if(numOfCaptures >= 4){
+                             if(stoneGroupLength == 2)
+                             {
+                                   if(
+                                       (end1Status == PenteGame.EMPTY && end2Status == computerColor) ||
+                                       (end1Status == computerColor && end2Status == PenteGame.EMPTY)
+                                      ) 
+                                   {
+                                             priorityRanking = 95;
+                                   }
                              }
                      }
+                     
+                     //Case Defensive -- opponent has 4 in row (stop the 5... and you can stop it) --> 90
+                     
+                     if(stoneGroupLength >=4){
+                               if(end1Status == PenteGame.EMPTY || end2Status == PenteGame.EMPTY){
+                                                     priorityRanking  = 90;
+                               }
+                     }
+                     
+                     //  *  Defensive -- opponent has unbounded 3 --> 80
+                     if(stoneGroupLength == 3){
+                           if(end1Status == PenteGame.EMPTY &&  end2Status == PenteGame.EMPTY){
+                                                 priorityRanking  = 80;
+                           }
+                     }
+                     
+                     if(stoneGroupLength == 2){               
+                           if(
+                               (end1Status == PenteGame.EMPTY && end2Status == computerColor) ||
+                               (end1Status == computerColor && end2Status == PenteGame.EMPTY)
+                              ) 
+                           {
+                                     priorityRanking = 75;
+                           }
+                     }
+                    
+           
+                   if(stoneGroupLength == 2){
+                           if(end1Status == PenteGame.EMPTY &&  end2Status == PenteGame.EMPTY){
+                                                 priorityRanking  = 70;
+                           }
+                   }
+                     
+                     
+
+                     
+                     
+                     
+                     
            } else {
              //adjusting OFFENSE Moves
-             
+                   //Offense --Go For Win
                    if(stoneGroupLength >= 4){
                            if(end1Status == PenteGame.EMPTY || end2Status == PenteGame.EMPTY)
                            {
-                             priorityRanking = 99;
+                             priorityRanking = 100;
                            }
                    }
+                   
+                   
+                   //Offensive -- you have three unbounded, going for 4 --> 85
+                   if(stoneGroupLength== 3){
+                           if(end1Status == PenteGame.EMPTY || end2Status == PenteGame.EMPTY){
+                             priorityRanking = 85;
+                           }
+                   }
+                   
+                   
+                   //Offensive -- you have two unbounded going for 3 unbounded --> 75
+                   if(stoneGroupLength== 3){
+                     if(end1Status == PenteGame.EMPTY || end2Status == PenteGame.EMPTY){
+                       priorityRanking = 85;
+                     }
+                   }
+                   
+                   if(stoneGroupLength== 2){
+                     if(end1Status == PenteGame.EMPTY && end2Status == PenteGame.EMPTY){
+                       priorityRanking = 75;
+                     }
+             }
              
            }
            
@@ -401,6 +544,23 @@ public class ComputerMoveGenerator
                                        end1 = PenteGame.EDGE;
                                  }
                                
+                                   
+                                   //Now add possible Moves
+                                   
+                                   priorityRanking = adjustPriorityRankings(
+                                       priorityRanking, 
+                                       stoneGroupLength, 
+                                       end1, 
+                                       row - stoneGroupLength - 1, 
+                                       col,
+                                       end2,
+                                       row, 
+                                       col, 
+                                       OorD
+                                       );
+                                   
+                                   
+                                   
     
                                        //Now Evaluate the move
                                
@@ -487,6 +647,22 @@ public class ComputerMoveGenerator
                                        end1 = PenteGame.EDGE;
                                  }
                                
+                                   
+                                   
+                              //Now add possible Moves
+                                   
+                                   priorityRanking = adjustPriorityRankings(
+                                       priorityRanking, 
+                                       stoneGroupLength, 
+                                       end1, 
+                                       row - stoneGroupLength - 1, 
+                                       col- stoneGroupLength - 1,
+                                       end2,
+                                       row, 
+                                       col, 
+                                       OorD
+                                       );
+                                  
     
                                        //Now Evaluate the move
                                
@@ -570,6 +746,20 @@ public class ComputerMoveGenerator
                                        end1 = PenteGame.EDGE;
                                  }
                                
+                                   
+                            //Now add possible Moves
+                                   
+                                   priorityRanking = adjustPriorityRankings(
+                                       priorityRanking, 
+                                       stoneGroupLength, 
+                                       end1, 
+                                       row - stoneGroupLength - 1, 
+                                       col- stoneGroupLength - 1,
+                                       end2,
+                                       row, 
+                                       col, 
+                                       OorD
+                                       );
     
                                        //Now Evaluate the move
                                
@@ -660,6 +850,21 @@ public class ComputerMoveGenerator
                                        end1 = PenteGame.EDGE;
                                  }
                                
+                                   
+                                   
+                            //Now add possible Moves
+                                   
+                                   priorityRanking = adjustPriorityRankings(
+                                       priorityRanking, 
+                                       stoneGroupLength, 
+                                       end1, 
+                                       row - stoneGroupLength - 1, 
+                                       col+ stoneGroupLength -+1,
+                                       end2,
+                                       row, 
+                                       col, 
+                                       OorD
+                                       );
     
                                        //Now Evaluate the move
                                
@@ -743,6 +948,20 @@ public class ComputerMoveGenerator
                                        end1 = PenteGame.EDGE;
                                  }
                                
+                                   
+                            //Now add possible Moves
+                                   
+                                   priorityRanking = adjustPriorityRankings(
+                                       priorityRanking, 
+                                       stoneGroupLength, 
+                                       end1, 
+                                       row - stoneGroupLength - 1, 
+                                       col+stoneGroupLength +1,
+                                       end2,
+                                       row, 
+                                       col, 
+                                       OorD
+                                       );
     
                                        //Now Evaluate the move
                                
